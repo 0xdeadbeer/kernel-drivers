@@ -1,6 +1,5 @@
 #include <linux/init.h>
 #include <linux/module.h>
-MODULE_LICENSE("Dual BSD/GPL"); 
 
 static int __init hello_init(void) {
 
@@ -15,3 +14,5 @@ static void hello_exit(void) {
 
 module_init(hello_init);
 module_exit(hello_exit);
+MODULE_AUTHOR("Osamu-KJ 2022"); 
+MODULE_DESCRIPTION("Simple hello world module");

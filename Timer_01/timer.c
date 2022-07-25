@@ -3,21 +3,19 @@
 #include <linux/module.h>
 #include <linux/timer.h>
 
-MODULE_LICENSE("Dual BSD/GPL"); 
-
 static struct timer_list my_timer;  
 
 static void callback(struct timer_list *timer) {
     pr_info("Callback called!\n");
 }
 
-static int __init hello_init(void) {
+static int __init init(void) {
 
     pr_info("Loading module..\n"); 
 
     // timer setup code 
     int seconds = 2; 
-    
+
     timer_setup(&my_timer, callback, 0); 
     int ret = mod_timer(&my_timer, jiffies + msecs_to_jiffies(seconds * 1000));
     if (ret) {
@@ -29,18 +27,21 @@ static int __init hello_init(void) {
     return 0; 
 }
 
-static void hello_exit(void) {
+static void __exit exit(void) {
     pr_info("Unloading module..\n");
 
     int ret = del_timer(&my_timer); 
-    if (ret) {
+
+    while (ret) {
         pr_err("%s: The timer is still in use...\n", __func__);
-        return ;
+        int ret = del_timer(&my_timer); 
     }
-    
-    pr_info("Module successfully unloaded"); 
+     
+    pr_info("Module successfully unloaded\n"); 
     
 }
 
-module_init(hello_init);
-module_exit(hello_exit);
+module_init(init);
+module_exit(exit);
+MODULE_AUTHOR("Osamu-KJ 2022");
+MODULE_DESCRIPTION("Simple timer that will wait x seconds and then call a callback function"); 
