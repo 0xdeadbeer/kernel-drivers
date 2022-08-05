@@ -5,6 +5,7 @@
 #include <linux/fs.h>
 #include <linux/device.h>
 #include <linux/cdev.h>
+#include <asm/uaccess.h>
 
 const int major_number = 200; 
 const int minor_number = 0; 
@@ -19,15 +20,38 @@ struct cdev *cdevice;
 struct device *devicefs; 
 struct class *device_class; 
 
+// driver data
+#define limit 1024
+char user_data[limit];
 
 static ssize_t chamur_read(struct file* file, char *buff, size_t len, loff_t *off) {
-    printk("AYO IM READING BRO~");
-    return 1; 
+    
+    if (len > limit*sizeof(char)) return 0; 
+
+    copy_to_user(buff, user_data, len);
+    
+    printk("TRYING TO READ YK");
+
+    return len; 
 }
 
 static ssize_t chamur_write(struct file* file, const char *buff, size_t len, loff_t *off) {
-    printk("AYO IM WRITING BRO~");
-    return 1; 
+
+    if (len > limit) return 0; // big problem 
+
+    copy_from_user(&user_data, buff, len);
+
+    return len; 
+}
+
+static int chamur_open(struct inode* inode, struct file *file) {
+    printk("AYO IM OPENING BRO~\n");
+    return 0; 
+}
+
+static int chamur_release(struct inode* inode, struct file *file) {
+    printk("AYO IM CLOSING BRO~\n");
+    return 0; 
 }
 
 static int __init chamur_init(void) {
@@ -38,8 +62,10 @@ static int __init chamur_init(void) {
 
     // setup the fop struct 
     fop.owner = THIS_MODULE; 
-    fop.read = chamur_read; 
-    fop.write = chamur_write; 
+    fop.read = &chamur_read; 
+    fop.write = &chamur_write; 
+    fop.open = &chamur_open; 
+    fop.release = &chamur_release; 
 
     ret = register_chrdev_region(dev, dev_count, module_code_name);
 
