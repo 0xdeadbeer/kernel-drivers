@@ -30,8 +30,6 @@ static ssize_t chamur_read(struct file* file, char *buff, size_t len, loff_t *of
 
     copy_to_user(buff, user_data, len);
     
-    printk("TRYING TO READ YK");
-
     return len; 
 }
 
@@ -84,7 +82,7 @@ static int __init chamur_init(void) {
     cdevice->owner = THIS_MODULE; 
 
     // add a char device to the system
-    ret = cdev_add(cdevice, dev, 1); 
+    ret = cdev_add(cdevice, dev, 2); 
 
     if (IS_ERR(ret)) {
         printk(KERN_WARNING "[!!] Problem encountered while initializing the cdev structure\n");
